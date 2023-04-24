@@ -124,6 +124,16 @@ bool thread_pool::is_paused() const
 	return is_paused_unsafe();
 }
 
+size_t thread_pool::get_first_queue_size() const
+{
+	return tasks1.size();
+}
+
+size_t thread_pool::get_second_queue_size() const
+{
+	return tasks2.size();
+}
+
 void thread_pool::routine1()
 {
 	while (true)
@@ -134,18 +144,27 @@ void thread_pool::routine1()
 		{
 			std::unique_lock<std::shared_mutex> lock(rw_lock);
 			auto wait_condition = [this, &task_acquiered, &t] {
-				task_acquiered = tasks1.pop(t);
+				if (!task_acquiered)
+				{
+					task_acquiered = tasks1.pop(t);
+				}
 				return terminated || (!paused && task_acquiered);
 			};
 
+			auto begin = std::chrono::high_resolution_clock::now();
+
 			task_waiter1.wait(lock, wait_condition);
+
+			auto end = std::chrono::high_resolution_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9;
+
+			printf("Thread %u (from 1st queue) was waiting for %.9f seconds.\n", std::this_thread::get_id(), elapsed);
 		}
 
 		if (task_acquiered)
 		{
 			move_tired();
 			t.perform();
-			printf("1");
 		}
 		else
 		{
@@ -168,17 +187,26 @@ void thread_pool::routine2()
 		{
 			std::unique_lock<std::shared_mutex> lock(rw_lock);
 			auto wait_condition = [this, &task_acquiered, &t] {
-				task_acquiered = tasks2.pop(t);
+				if (!task_acquiered)
+				{
+					task_acquiered = tasks2.pop(t);
+				}
 				return terminated || (!paused && task_acquiered);
 			};
 
+			auto begin = std::chrono::high_resolution_clock::now();
+
 			task_waiter2.wait(lock, wait_condition);
+
+			auto end = std::chrono::high_resolution_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() * 1e-9;
+
+			printf("Thread %u (from 2d queue) was waiting for %.9f seconds.\n", std::this_thread::get_id(), elapsed);
 		}
 
 		if (task_acquiered)
 		{
 			t.perform();
-			printf("2");
 		}
 		else
 		{

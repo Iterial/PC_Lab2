@@ -7,7 +7,7 @@ class task
 {
 public:
 	task() = default;
-	task(unsigned int time_to_complete);
+	task(int id, unsigned int time_to_complete);
 
 	bool is_tired() const;
 
@@ -30,6 +30,7 @@ public:
 	}
 
 private:
+	int id;
 	unsigned int time_to_complete;
 	std::chrono::steady_clock::time_point creation_time;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <chrono>
 #include <thread>
 #include <shared_mutex>
 
@@ -30,6 +31,10 @@ public:
 public:
 	bool working() const;
 	bool is_paused() const;
+
+public:
+	size_t get_first_queue_size() const;
+	size_t get_second_queue_size() const;
 
 public:
 	thread_pool(thread_pool& other) = delete;

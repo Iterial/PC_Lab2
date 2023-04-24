@@ -130,7 +130,6 @@
     <ClCompile Include="custom_priority_queue.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="task.cpp" />
-    <ClCompile Include="task_generator.cpp" />
     <ClCompile Include="task_queue.cpp" />
     <ClCompile Include="thread_pool.cpp" />
   </ItemGroup>
